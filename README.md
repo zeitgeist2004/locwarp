@@ -11,6 +11,8 @@ só o essencial para mudar a localização (GPS) do iPhone.
 - Botões **Teleportar** e **Voltar ao GPS real**
 - iPhone iOS **17+**, sem jailbreak
 
+![Interface do Localização Fácil](docs/tela.png)
+
 ## Requisitos
 
 | Item | Detalhe |

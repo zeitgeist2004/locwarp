@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Localização Fácil — locwarp-simples</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%8D%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
   :root {
@@ -156,6 +157,7 @@
       <div class="dica" style="margin-top:0">
         Arraste o pino no mapa (ou clique no mapa / busque um endereço) e clique em Teleportar.
       </div>
+      <div id="pinoInfo" class="dica"></div>
       <div class="botoes">
         <button id="btTeleportar" class="primario" disabled>Teleportar</button>
         <button id="btLimpar" class="perigo" disabled>Voltar ao GPS real</button>
@@ -184,7 +186,7 @@ L.Icon.Default.mergeOptions({
 
 const mapa = L.map("mapa").setView([-23.5505, -46.6333], 13);
 
-L.control.layers({
+const camadas = {
   "OpenStreetMap": L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19, attribution: "&copy; OpenStreetMap",
   }),
@@ -197,7 +199,9 @@ L.control.layers({
   "ESRI Satélite": L.tileLayer(
     "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
     { maxZoom: 19, attribution: "&copy; Esri" }),
-}, { position: "topright" }).addTo(mapa);
+};
+camadas["OpenStreetMap"].addTo(mapa);
+L.control.layers(camadas, null, { position: "topright" }).addTo(mapa);
 
 const pino = L.marker([-23.5505, -46.6333], { draggable: true }).addTo(mapa);
 
@@ -207,8 +211,7 @@ function moverPino(lat, lng, ir = false) {
   pino.setLatLng([lat, lng]);
   document.getElementById("lat").value = lat.toFixed(6);
   document.getElementById("lng").value = lng.toFixed(6);
-  document.getElementById("coords").textContent =
-    "Pino em " + lat.toFixed(6) + ", " + lng.toFixed(6);
+  document.getElementById("pinoInfo").textContent = "Pino em " + lat.toFixed(6) + ", " + lng.toFixed(6);
   document.getElementById("linkMaps").href =
     "https://www.google.com/maps?q=" + lat.toFixed(6) + "," + lng.toFixed(6);
   if (ir) mapa.setView([lat, lng], Math.max(mapa.getZoom(), 15));

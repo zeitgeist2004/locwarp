@@ -24,8 +24,8 @@ echo Instalando/atualizando dependencias...
 .venv\Scripts\pip install -r requisitos.txt -q
 
 echo.
-echo Abrindo http://127.0.0.1:8777 no navegador...
-start "" http://127.0.0.1:8777
+echo Abrindo http://127.0.0.1:8777 no navegador (aguarde 3s)...
+start "" cmd /c "timeout /t 3 /nobreak >nul && start http://127.0.0.1:8777"
 
 echo.
 echo Servidor rodando. Feche esta janela para parar.
