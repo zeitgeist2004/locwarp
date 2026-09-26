@@ -35,7 +35,7 @@ só o essencial para mudar a localização (GPS) do iPhone.
 
 ### Pareamento Wi-Fi (uma vez)
 
-Com o cabo plugado:
+Com o cabo plugado, rode **`parear_wifi.bat`** (ou o comando abaixo):
 
 ```bash
 python -m pymobiledevice3 lockdown wifi-connections on
