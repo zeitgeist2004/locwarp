@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Localização Fácil — locwarp-simples</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  :root {
+    --fundo: #f4f5f7;
+    --painel: #ffffff;
+    --borda: #d9dce1;
+    --texto: #1f2430;
+    --suave: #667085;
+    --azul: #2563eb;
+    --verde: #16a34a;
+    --vermelho: #dc2626;
+    --cinza: #94a3b8;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--fundo); color: var(--texto);
+    display: flex; flex-direction: column; height: 100%;
+  }
+  header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 16px; background: var(--painel);
+    border-bottom: 1px solid var(--borda);
+  }
+  header h1 { font-size: 18px; margin: 0; }
+  header .sub { color: var(--suave); font-size: 12px; }
+  #chip {
+    margin-left: auto; font-size: 13px; padding: 6px 12px;
+    border-radius: 999px; background: #eef1f5; color: var(--suave);
+    border: 1px solid var(--borda); white-space: nowrap;
+  }
+  #chip.ok { background: #eafaf0; color: var(--verde); border-color: #b7e4c7; }
+  #chip.erro { background: #fdecec; color: var(--vermelho); border-color: #f5c2c2; }
+  main { flex: 1; display: flex; min-height: 0; }
+  aside {
+    width: 330px; min-width: 280px; overflow-y: auto;
+    padding: 14px; display: flex; flex-direction: column; gap: 12px;
+    background: var(--fundo);
+  }
+  section {
+    background: var(--painel); border: 1px solid var(--borda);
+    border-radius: 10px; padding: 12px;
+  }
+  section h2 {
+    font-size: 12px; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--suave); margin: 0 0 8px;
+  }
+  label { font-size: 13px; color: var(--suave); display: block; margin: 6px 0 2px; }
+  input, select {
+    width: 100%; padding: 8px 10px; border: 1px solid var(--borda);
+    border-radius: 8px; font-size: 14px; background: #fff; color: var(--texto);
+  }
+  input:focus, select:focus { outline: 2px solid #bfdbfe; border-color: var(--azul); }
+  .linha { display: flex; gap: 8px; }
+  .linha > * { flex: 1; }
+  button {
+    cursor: pointer; border-radius: 8px; border: 1px solid var(--borda);
+    padding: 9px 12px; font-size: 14px; background: #fff; color: var(--texto);
+    transition: filter .15s;
+  }
+  button:hover:not(:disabled) { filter: brightness(.96); }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  button.primario { background: var(--azul); border-color: var(--azul); color: #fff; font-weight: 600; }
+  button.perigo { background: #fff; border-color: #f5c2c2; color: var(--vermelho); }
+  .botoes { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+  .dica { font-size: 12px; color: var(--suave); margin-top: 6px; line-height: 1.5; }
+  #aparelho { font-size: 13px; line-height: 1.6; }
+  #aparelho b { color: var(--texto); }
+  #mensagem {
+    display: none; font-size: 13px; border-radius: 8px; padding: 8px 10px;
+    line-height: 1.45; margin-top: 8px;
+  }
+  #mensagem.erro { display: block; background: #fdecec; color: #991b1b; border: 1px solid #f5c2c2; }
+  #mensagem.ok { display: block; background: #eafaf0; color: #166534; border: 1px solid #b7e4c7; }
+  #resultados { list-style: none; padding: 0; margin: 8px 0 0; display: flex; flex-direction: column; gap: 6px; }
+  #resultados button {
+    width: 100%; text-align: left; font-size: 12.5px; line-height: 1.35;
+    padding: 7px 9px; color: var(--texto);
+  }
+  #mapa { flex: 1; min-height: 260px; }
+  a.link { font-size: 13px; color: var(--azul); text-decoration: none; }
+  a.link:hover { text-decoration: underline; }
+  #coords { font-variant-numeric: tabular-nums; }
+  @media (max-width: 760px) {
+    main { flex-direction: column-reverse; }
+    aside { width: 100%; max-height: 52%; }
+    #mapa { min-height: 48%; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Localização Fácil</h1>
+    <div class="sub">locwarp-simples · altere o GPS do iPhone</div>
+  </div>
+  <div id="chip">Verificando…</div>
+</header>
+
+<main>
+  <aside>
+    <section>
+      <h2>Conexão</h2>
+      <label for="modo">Conexão com o iPhone</label>
+      <select id="modo">
+        <option value="usb">USB (cabo plugado)</option>
+        <option value="wifi">Wi-Fi (sem cabo)</option>
+      </select>
+      <div class="linha" style="margin-top:8px">
+        <button id="btConectar" class="primario">Conectar</button>
+        <button id="btDesconectar" disabled>Desconectar</button>
+      </div>
+      <div id="aparelho" style="margin-top:8px">
+        <span style="color:var(--suave)">Nenhum iPhone conectado.</span>
+      </div>
+      <div id="mensagem"></div>
+    </section>
+
+    <section>
+      <h2>Buscar endereço</h2>
+      <div class="linha">
+        <input id="busca" type="text" placeholder="Ex.: Av. Paulista 1578, São Paulo">
+        <button id="btBuscar" style="flex:0 0 auto">Buscar</button>
+      </div>
+      <ul id="resultados"></ul>
+      <div class="dica">Busca pelo OpenStreetMap (Nominatim), em português.</div>
+    </section>
+
+    <section>
+      <h2>Coordenadas</h2>
+      <div class="linha">
+        <div>
+          <label for="lat">Latitude</label>
+          <input id="lat" type="number" step="0.000001" min="-90" max="90">
+        </div>
+        <div>
+          <label for="lng">Longitude</label>
+          <input id="lng" type="number" step="0.000001" min="-180" max="180">
+        </div>
+      </div>
+      <div class="botoes">
+        <button id="btIr">Mover o pino até aqui</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>Teleporte</h2>
+      <div class="dica" style="margin-top:0">
+        Arraste o pino no mapa (ou clique no mapa / busque um endereço) e clique em Teleportar.
+      </div>
+      <div class="botoes">
+        <button id="btTeleportar" class="primario" disabled>Teleportar</button>
+        <button id="btLimpar" class="perigo" disabled>Voltar ao GPS real</button>
+      </div>
+      <div id="coords" class="dica"></div>
+      <p style="margin:10px 0 0">
+        <a id="linkMaps" class="link" href="#" target="_blank" rel="noopener">Abrir no Google Maps ↗</a>
+      </p>
+    </section>
+  </aside>
+
+  <div id="mapa"></div>
+</main>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+"use strict";
+
+// ---------- mapa ----------
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+});
+
+const mapa = L.map("mapa").setView([-23.5505, -46.6333], 13);
+
+L.control.layers({
+  "OpenStreetMap": L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19, attribution: "&copy; OpenStreetMap",
+  }),
+  "Google Ruas": L.tileLayer("https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}", {
+    maxZoom: 20, attribution: "&copy; Google",
+  }),
+  "Google Satélite": L.tileLayer("https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}", {
+    maxZoom: 20, attribution: "&copy; Google",
+  }),
+  "ESRI Satélite": L.tileLayer(
+    "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    { maxZoom: 19, attribution: "&copy; Esri" }),
+}, { position: "topright" }).addTo(mapa);
+
+const pino = L.marker([-23.5505, -46.6333], { draggable: true }).addTo(mapa);
+
+function moverPino(lat, lng, ir = false) {
+  lat = Number(lat); lng = Number(lng);
+  if (!isFinite(lat) || !isFinite(lng)) return;
+  pino.setLatLng([lat, lng]);
+  document.getElementById("lat").value = lat.toFixed(6);
+  document.getElementById("lng").value = lng.toFixed(6);
+  document.getElementById("coords").textContent =
+    "Pino em " + lat.toFixed(6) + ", " + lng.toFixed(6);
+  document.getElementById("linkMaps").href =
+    "https://www.google.com/maps?q=" + lat.toFixed(6) + "," + lng.toFixed(6);
+  if (ir) mapa.setView([lat, lng], Math.max(mapa.getZoom(), 15));
+}
+
+pino.on("dragend", () => { const p = pino.getLatLng(); moverPino(p.lat, p.lng); });
+mapa.on("click", (e) => moverPino(e.latlng.lat, e.latlng.lng));
+moverPino(-23.5505, -46.6333);
+
+// ---------- ajuda de interface ----------
+const el = (id) => document.getElementById(id);
+let mensagemTimer = null;
+
+function aviso(texto, tipo = "erro") {
+  const caixa = el("mensagem");
+  caixa.textContent = texto;
+  caixa.className = tipo;
+  clearTimeout(mensagemTimer);
+  if (tipo === "ok") mensagemTimer = setTimeout(() => { caixa.className = ""; }, 6000);
+}
+
+async function api(caminho, corpo) {
+  const opcoes = corpo
+    ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(corpo) }
+    : {};
+  const resposta = await fetch(caminho, opcoes);
+  let dados = null;
+  try { dados = await resposta.json(); } catch (_) {}
+  if (!resposta.ok) {
+    throw new Error((dados && dados.detail) ? dados.detail : "Erro " + resposta.status);
+  }
+  return dados;
+}
+
+// ---------- status ----------
+let conectado = false;
+
+function aplicarStatus(s) {
+  conectado = !!(s && s.conectado);
+  const chip = el("chip");
+  if (conectado) {
+    chip.className = "ok";
+    chip.textContent = "Conectado · " + s.dispositivo.nome + " (" + s.dispositivo.transporte + ")";
+    el("aparelho").innerHTML =
+      "<b>" + s.dispositivo.nome + "</b><br>iOS " + s.dispositivo.ios +
+      " · " + s.dispositivo.transporte +
+      "<br><span style='color:var(--suave)'>" + s.dispositivo.udid + "</span>";
+  } else if (s && s.dispositivo) {
+    chip.className = "";
+    chip.textContent = "Desconectado";
+    el("aparelho").innerHTML =
+      "<span style='color:var(--suave)'>Último aparelho: " + s.dispositivo.nome +
+      " (iOS " + s.dispositivo.ios + ")</span>";
+  } else {
+    chip.className = "";
+    chip.textContent = "Desconectado";
+    el("aparelho").innerHTML =
+      "<span style='color:var(--suave)'>Nenhum iPhone conectado.</span>";
+  }
+  el("btConectar").disabled = conectado;
+  el("btDesconectar").disabled = !conectado;
+  el("btTeleportar").disabled = !conectado;
+  el("btLimpar").disabled = !conectado;
+  if (s && s.simulado) {
+    el("coords").textContent =
+      "Simulando: " + s.simulado.lat.toFixed(6) + ", " + s.simulado.lng.toFixed(6);
+  } else if (conectado) {
+    el("coords").textContent = "Sem simulação ativa (GPS real).";
+  } else {
+    el("coords").textContent = "";
+  }
+}
+
+async function atualizarStatus() {
+  try {
+    aplicarStatus(await api("/status"));
+    el("chip").className = el("chip").className.replace(" erro", "");
+  } catch (e) {
+    el("chip").className = "erro";
+    el("chip").textContent = "Servidor fora do ar";
+  }
+}
+
+// ---------- ações ----------
+el("btConectar").onclick = async () => {
+  aviso("Conectando ao iPhone…", "ok");
+  try {
+    aplicarStatus(await api("/conectar", { modo: el("modo").value }));
+    aviso("Conectado!", "ok");
+  } catch (e) {
+    aviso(e.message, "erro");
+    atualizarStatus();
+  }
+};
+
+el("btDesconectar").onclick = async () => {
+  try {
+    aplicarStatus(await api("/desconectar"));
+    aviso("Desconectado.", "ok");
+  } catch (e) { aviso(e.message, "erro"); }
+};
+
+el("btTeleportar").onclick = async () => {
+  const p = pino.getLatLng();
+  try {
+    aplicarStatus(await api("/teleportar", { lat: p.lat, lng: p.lng }));
+    aviso("Teleportado para " + p.lat.toFixed(6) + ", " + p.lng.toFixed(6), "ok");
+  } catch (e) { aviso(e.message, "erro"); atualizarStatus(); }
+};
+
+el("btLimpar").onclick = async () => {
+  try {
+    aplicarStatus(await api("/limpar"));
+    aviso("De volta ao GPS real.", "ok");
+  } catch (e) { aviso(e.message, "erro"); atualizarStatus(); }
+};
+
+el("btIr").onclick = () => {
+  moverPino(el("lat").value, el("lng").value, true);
+};
+
+// ---------- busca de endereço ----------
+async function buscar() {
+  const termo = el("busca").value.trim();
+  const lista = el("resultados");
+  lista.innerHTML = "";
+  if (!termo) return;
+  try {
+    const url = "https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5" +
+                "&accept-language=pt-BR&q=" + encodeURIComponent(termo);
+    const resposta = await fetch(url, { headers: { "Accept": "application/json" } });
+    const resultados = await resposta.json();
+    if (!resultados.length) { aviso("Endereço não encontrado.", "erro"); return; }
+    for (const r of resultados) {
+      const item = document.createElement("li");
+      const botao = document.createElement("button");
+      botao.textContent = r.display_name;
+      botao.onclick = () => {
+        moverPino(r.lat, r.lon, true);
+        lista.innerHTML = "";
+        aviso("Pino movido. Clique em Teleportar para aplicar.", "ok");
+      };
+      item.appendChild(botao);
+      lista.appendChild(item);
+    }
+  } catch (e) {
+    aviso("Falha na busca: " + e.message, "erro");
+  }
+}
+
+el("btBuscar").onclick = buscar;
+el("busca").addEventListener("keydown", (e) => { if (e.key === "Enter") buscar(); });
+
+// ---------- ciclo ----------
+atualizarStatus();
+setInterval(atualizarStatus, 3000);
+</script>
+</body>
+</html>
