@@ -3,7 +3,7 @@ setlocal
 cd /d "%~dp0"
 
 echo ============================================
-echo   LocWarp-Simples - Localizacao Facil
+echo   Larinha Teleporter
 echo ============================================
 echo.
 

@@ -1,7 +1,7 @@
-# locwarp-simples — "Localização Fácil"
+# Larinha Teleporter
 
 Fork **simplificado e em português** do [LocWarp](https://github.com/keezxc1223/locwarp):
-só o essencial para mudar a localização (GPS) do iPhone.
+só o essencial para mudar a localização (GPS) do iPhone. (Repositório: `locwarp-simples`.)
 
 - **Sem cabo (USB)** ou **sem cabo mesmo (Wi-Fi)**
 - **Pin arrastável** no mapa + clique no mapa
@@ -11,7 +11,7 @@ só o essencial para mudar a localização (GPS) do iPhone.
 - Botões **Teleportar** e **Voltar ao GPS real**
 - iPhone iOS **17+**, sem jailbreak
 
-![Interface do Localização Fácil](docs/tela.png)
+![Interface do Larinha Teleporter](docs/tela.png)
 
 ## Requisitos
 

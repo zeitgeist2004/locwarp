@@ -1,6 +1,6 @@
 """
-locwarp-simples ("Localização Fácil") — servidor mínimo
-=========================================================
+Larinha Teleporter — servidor mínimo
+====================================
 
 Fork simplificado e em pt-BR do LocWarp (MIT, © keezxc1223).
 
@@ -40,7 +40,7 @@ from pymobiledevice3.usbmux import list_devices
 API_HOST = "127.0.0.1"   # troque para "0.0.0.0" se quiser controlar de outro aparelho
 API_PORT = 8777
 WEB_DIR = Path(__file__).resolve().parent / "web"
-PASTA_ESTADO = Path.home() / ".locwarp-simples"
+PASTA_ESTADO = Path.home() / ".larinha-teleporter"
 ARQUIVO_ESTADO = PASTA_ESTADO / "estado.json"
 
 logging.basicConfig(
@@ -48,9 +48,9 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s",
     datefmt="%H:%M:%S",
 )
-log = logging.getLogger("localizacao-facil")
+log = logging.getLogger("larinha-teleporter")
 
-app = FastAPI(title="Localização Fácil", version="1.0.0")
+app = FastAPI(title="Larinha Teleporter", version="1.0.0")
 
 
 # ---------------------------------------------------------------------------
@@ -393,5 +393,5 @@ async def rota_limpar() -> dict:
 
 
 if __name__ == "__main__":
-    log.info("Localização Fácil em http://%s:%s", API_HOST, API_PORT)
+    log.info("Larinha Teleporter em http://%s:%s", API_HOST, API_PORT)
     uvicorn.run(app, host=API_HOST, port=API_PORT, log_level="warning")

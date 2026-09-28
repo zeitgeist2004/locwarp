@@ -1,4 +1,4 @@
-# Aviso de créditos — locwarp-simples
+# Aviso de créditos — Larinha Teleporter (repositório locwarp-simples)
 
 Este projeto é um fork simplificado do **LocWarp**:
 

@@ -3,7 +3,7 @@ setlocal
 cd /d "%~dp0"
 
 echo ============================================
-echo   Pareamento Wi-Fi do iPhone (uma vez)
+echo   Larinha Teleporter - Pareamento Wi-Fi
 echo ============================================
 echo.
 echo Conecte o iPhone pelo cabo, desbloqueie a tela e confie no computador.
